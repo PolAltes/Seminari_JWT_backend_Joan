@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerNewUser, loginUser, googleAuth } from "../auth/auth_service.js";
+import { registerNewUser, loginUser, googleAuth, doRefreshToken } from "../auth/auth_service.js";
 
 const registerCtrl = async ({body}: Request, res: Response) => {
     try{
@@ -10,6 +10,25 @@ const registerCtrl = async ({body}: Request, res: Response) => {
     }
 };
 
+const doRefreshTokenCtrl = async (req: Request, res: Response) => {
+    try {
+        const { refreshToken } = req.body;
+        
+        if (!refreshToken) {
+            return res.status(400).json({ message: "Refresh token necessari" });
+        }
+
+        const result = await doRefreshToken(refreshToken);
+        
+        if (typeof result === 'string') {
+            return res.status(401).json({ message: result });
+        }
+        
+        return res.json(result);
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message });
+    }
+};
 
 
 const loginCtrl = async ({ body }: Request, res: Response) => {
@@ -83,4 +102,4 @@ const googleAuthCallback = async (req: Request, res: Response) => {
 };
 
 
-export { registerCtrl, loginCtrl,googleAuthCtrl, googleAuthCallback };
+export { registerCtrl, loginCtrl,googleAuthCtrl, googleAuthCallback, doRefreshTokenCtrl };

@@ -69,7 +69,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./modules/users/*.js', './modules/forum/*.js', './modules/subjects/*.js', './modules/auth/*.js'] // Asegúrate de que esta ruta apunta a tus rutas
+    apis: ['./build/modules/users/*.js', './build/modules/forum/*.js', './build/modules/subjects/*.js', './build/modules/auth/*.js'] // Asegúrate de que esta ruta apunta a tus rutas
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
@@ -92,7 +92,7 @@ app.get('/', (req, res) => {
 // Conexión a MongoDB
 //mongoose;
 mongoose
-    .connect(process.env.MONGODB_URI || 'mongodb+srv://joan:1234@cluster0.3owhs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+    .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/JWT_Exercise')
     .then(() => console.log('Connected to DB'))
     .catch((error) => console.error('DB Connection Error:', error));
 

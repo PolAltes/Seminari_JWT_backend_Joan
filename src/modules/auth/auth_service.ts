@@ -1,5 +1,5 @@
 import { encrypt, verified } from "../../utils/bcrypt.handle.js";
-import { generateToken } from "../../utils/jwt.handle.js";
+import { generateToken, generateRefreshToken, verifyToken } from "../../utils/jwt.handle.js";
 import User, { IUser } from "../users/user_models.js";
 import { Auth } from "./auth_model.js";
 import jwt from 'jsonwebtoken';
@@ -25,9 +25,19 @@ const loginUser = async ({ email, password }: Auth) => {
     const isCorrect = await verified(password, passwordHash);
     if(!isCorrect) return "INCORRECT_PASSWORD";
 
-    const token = generateToken(checkIs.email);
+    const additionalData = {
+        name: checkIs.name,
+        role: checkIs.role || 'user'
+    };
+
+    const token = generateToken(checkIs.email, additionalData);
+    const refreshToken = generateRefreshToken(checkIs.email);
+
+    checkIs.refreshToken = refreshToken;
+    await checkIs.save(); 
     const data = {
         token,
+        refreshToken,
         user: checkIs
     }
     return data;
@@ -99,5 +109,34 @@ const googleAuth = async (code: string) => {
     }
 };
 
+const doRefreshToken = async (refreshToken: string) => {
+    try{
+        const verify: any = verifyToken(refreshToken);
+        if(!verify) return "INVALID_REFRESH_TOKEN";
 
-export { registerNewUser, loginUser, googleAuth };
+        const user = await User.findOne({email: verify.email});
+        if(!user) return "USER_NOT_FOUND";
+
+        if (user.refreshToken !== refreshToken) return "INVALID_REFRESH_TOKEN";
+
+        const added = {
+            name: user.name,
+            role: user.role || 'user'
+        };
+
+        const token = generateToken(user.email, added);
+
+        return {
+            token : token,
+            user
+        }
+
+    }catch (error){
+        console.error('Error al refrescar el token:', error);
+        return "ERROR_REFRESH_TOKEN";
+
+    }
+}
+
+
+export { registerNewUser, loginUser, googleAuth, doRefreshToken };

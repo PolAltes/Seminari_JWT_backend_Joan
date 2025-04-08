@@ -113,9 +113,9 @@ router.get('/users', checkJwt, getAllUsersHandler);
  *               properties:
  *                  name:
  *                   type: string
- *                 age:
+ *                  age:
  *                   type: integer
- *                 email:
+ *                  email:
  *                    type: string
  *       404:
  *         description: Usuario no encontrado
